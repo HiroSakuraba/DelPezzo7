@@ -1,0 +1,1121 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{aliascnt}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+\usepackage{geometry}
+\usepackage{array,longtable,booktabs,multirow}
+\usepackage{tikz-cd}
+\geometry{margin=1in}
+
+\newcommand{\repourl}{\texttt{https://github.com/HiroSakuraba/DelPezzo7}}
+
+\title{A Computer-Assisted Bound of Seven Singular Points for Rank-One klt del Pezzo Surfaces in Characteristic Three}
+\author{Benjamin John Schulz\\[4pt]\small\textit{Independent researcher}}
+\date{}
+
+\newtheorem{theorem}{Theorem}[section]
+\newaliascnt{proposition}{theorem}
+\newtheorem{proposition}[proposition]{Proposition}
+\aliascntresetthe{proposition}
+\newaliascnt{lemma}{theorem}
+\newtheorem{lemma}[lemma]{Lemma}
+\aliascntresetthe{lemma}
+\newaliascnt{corollary}{theorem}
+\newtheorem{corollary}[corollary]{Corollary}
+\aliascntresetthe{corollary}
+\newaliascnt{claim}{theorem}
+\newtheorem{claim}[claim]{Claim}
+\aliascntresetthe{claim}
+\theoremstyle{definition}
+\newaliascnt{remark}{theorem}
+\newtheorem{remark}[remark]{Remark}
+\aliascntresetthe{remark}
+\newaliascnt{notation}{theorem}
+\newtheorem{notation}[notation]{Notation}
+\aliascntresetthe{notation}
+\newaliascnt{definition}{theorem}
+\newtheorem{definition}[definition]{Definition}
+\aliascntresetthe{definition}
+
+\crefname{theorem}{theorem}{theorems}
+\Crefname{theorem}{Theorem}{Theorems}
+\crefname{proposition}{proposition}{propositions}
+\Crefname{proposition}{Proposition}{Propositions}
+\crefname{lemma}{lemma}{lemmas}
+\Crefname{lemma}{Lemma}{Lemmas}
+\crefname{corollary}{corollary}{corollaries}
+\Crefname{corollary}{Corollary}{Corollaries}
+\crefname{remark}{remark}{remarks}
+\Crefname{remark}{Remark}{Remarks}
+\crefname{definition}{definition}{definitions}
+\Crefname{definition}{Definition}{Definitions}
+\crefname{notation}{notation}{notations}
+\Crefname{notation}{Notation}{Notations}
+
+\newcommand{\A}{\mathbb A}
+\newcommand{\Pbb}{\mathbb P}
+\newcommand{\Fbb}{\mathbb F}
+\newcommand{\Qbb}{\mathbb Q}
+\newcommand{\Zbb}{\mathbb Z}
+\newcommand{\NS}{\mathrm{NS}}
+\newcommand{\rk}{\mathrm{rk}}
+\newcommand{\Bl}{\mathrm{Bl}}
+\newcommand{\Exc}{\mathrm{Exc}}
+\newcommand{\Spec}{\mathrm{Spec}}
+\newcommand{\Pic}{\mathrm{Pic}}
+\newcommand{\Cl}{\mathrm{Cl}}
+\newcommand{\Supp}{\mathrm{Supp}}
+\newcommand{\Proj}{\mathrm{Proj}}
+\newcommand{\Aut}{\mathrm{Aut}}
+\newcommand{\ord}{\mathrm{ord}}
+\newcommand{\mult}{\mathrm{mult}}
+\newcommand{\eff}{\mathrm{eff}}
+\newcommand{\disc}{\mathrm{disc}}
+\newcommand{\ExcRank}{\mathrm{exc\text{-}rk}}
+\newcommand{\ie}{\emph{i.e.}}
+\newcommand{\eg}{\emph{e.g.}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We prove, by a corrected hybrid argument combining exact lattice computation and geometric elimination, that a rank-one klt del Pezzo surface over an algebraically closed field of characteristic $3$ has at most seven singular points. The proof is by contradiction. Assuming $N(X)=8$, we first carry out a computer-assisted basket reduction: after exact discriminant, odd-lattice, and anticanonical-complement screens, only five candidate baskets remain. Three baskets of type $7A_1+$ one exotic cyclic quotient singularity are then excluded by Weyl normalization of the exotic block together with a sharp bound on the orthogonal root subsystem. The mixed basket
+\[
+\mathcal B_{\mathrm{mix}}=\left\{\tfrac12(1,1),\ 5\times\tfrac13(1,1),\ 2\times\tfrac13(1,2)\right\}
+\]
+is reduced to two polarization orbits. One orbit is eliminated by an exact root-combinatorial obstruction. The surviving orbit is globally normalized to a single canonical model, reduced to seven grouped symmetry types, and each type is ruled out by a tangent-contact plus B\'ezout argument. Finally, the Gorenstein basket $8A_1$ is shown to force degree $1$; after blowing up the anticanonical base point, the standard degree-one weak del Pezzo model gives a separable double cover of $\mathbb F_2$ branched along $S+C$ with $C\in |3(S+2F)|$ disjoint from the negative section. A direct node bound shows that such a branch divisor supports at most six nodes, excluding $8A_1$. Therefore $N(X)\le 7$. The accompanying repository records the exact finite computations used in the proof.\footnote{GitHub-ready repository bundle: \repourl. In the archival version the placeholder URL should be replaced by the public repository location.}
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+Let $k$ be an algebraically closed field of characteristic $3$, and let $X$ be a rank-one klt del Pezzo surface over $k$. Write $N(X)$ for the number of singular points of $X$. The goal of this paper is to prove the following theorem.
+
+\begin{theorem}[Main theorem]\label{thm:main}
+Let $X$ be a rank-one klt del Pezzo surface over an algebraically closed field of characteristic $3$. Then
+\[
+N(X)\le 7.
+\]
+\end{theorem}
+
+This bound is sharp in the klt category: Lacini constructs, by a modification of the Keel--McKernan construction, a rank-one log del Pezzo surface in characteristic $3$ with exactly seven singular points; see Example~7.4 and the discussion around Corollary~1.2 of \cite{Lacini24}. Thus \cref{thm:main} determines the optimal singular-point bound in this characteristic. The novelty of the present argument is not the existence of the sharp example, but rather the closure of the remaining $N=8$ possibilities.
+
+\medskip
+\noindent
+\textbf{Proof outline.}
+The proof is by contradiction: we assume $N(X)=8$ and derive an impossibility in every case.
+The argument has three independent components.
+\begin{enumerate}[label=\textup{(\arabic*)}]
+\item\emph{Lattice-theoretic reduction.} The orbifold Noether formula, combined with discriminant and odd-lattice bilinear screens, reduces all possible $8$-point baskets to five survivors. This is the only stage at which a broad computer-assisted enumeration is used.
+\item\emph{Root combinatorics.} The three exotic baskets ($7A_1$ plus one cyclic quotient) and the mixed basket are eliminated by showing that the lattice of exceptional curves on the minimal resolution is too constrained to support enough disjoint $(-2)$-curves or irreducible noncanonical exceptional curves. The key tools are Weyl/Cremona normalization, exact orthogonal root-system computations, and a B\'ezout/tangent-contact argument for irreducibility.
+\item\emph{Classical algebraic geometry.} The pure Gorenstein basket $8A_1$ is eliminated by the degree-one weak del Pezzo double-cover model: the surface admits a separable double cover of $\mathbb F_2$ whose branch divisor can support at most six nodes.
+\end{enumerate}
+
+The proof is hybrid. The first step is a finite exact reduction of all possible $8$-point baskets to five survivors; this is the only stage at which a broad search is used. Every later step is either a short exact lattice computation or a geometric contradiction. Because the proof chain underwent several corrections during the exploratory phase, we write the paper only around the \emph{final corrected chain}; superseded branches and failed subarguments are omitted from the logical core and are retained only in the repository history.
+
+The five surviving $N=8$ baskets are
+\[
+8A_1,
+\qquad
+7A_1+\tfrac17(1,1),
+\qquad
+7A_1+\tfrac17(1,2),
+\qquad
+7A_1+\tfrac1{11}(1,2),
+\]
+and the mixed basket
+\[
+\mathcal B_{\mathrm{mix}}=\left\{\tfrac12(1,1),\ 5\times\tfrac13(1,1),\ 2\times\tfrac13(1,2)\right\}.
+\]
+The paper is organized around closing these five possibilities:
+\begin{itemize}
+\item In \cref{sec:exotic}, the three exotic baskets are excluded by normalizing the noncanonical block and bounding the size of the orthogonal root subsystem.
+\item In \cref{sec:mixed}, the mixed basket is reduced to a single polarization orbit, globally normalized, and then eliminated by a tangent-contact contradiction.
+\item In \cref{sec:pure8a1}, the pure Gorenstein basket $8A_1$ is reduced to the degree-$1$ weak del Pezzo model and excluded by a branch-node bound.
+\end{itemize}
+
+The accompanying repository is part of the proof architecture. It contains the exact scripts used to enumerate candidate baskets, compute discriminant and root data, and verify the finite orbit counts that appear in the paper. The computational steps are exact and finite; no floating-point numerics or random sampling enter the argument.
+
+At the same time, the repository is intentionally broader than the logical core of the paper. It also preserves several exploratory branches---including ambient/deformation lanes, quasi-elliptic probes, wild $\alpha_3$/Artin--Schreier searches, and the earlier matroid/circuit screening tools---because those files are useful for provenance and for future work, whether human or machine-assisted. None of that exploratory material is used as a theorem dependency unless it is explicitly cited below.
+
+\section{Preliminaries}\label{sec:prelim}
+
+\begin{notation}
+Throughout, $k$ is an algebraically closed field of characteristic $3$. Let
+\[
+f\colon Y\to X
+\]
+be the minimal resolution of a rank-one klt del Pezzo surface $X$. For a cyclic quotient singularity we use the notation $\frac1r(1,q)$. Whenever we use a blowup model, we write
+\[
+Y\cong \Bl_{p_1,\dots,p_n}\Pbb^2
+\]
+with basis $H,E_1,\dots,E_n$ and canonical class
+\[
+K_Y=-3H+E_1+\cdots+E_n.
+\]
+If $D=dH-\sum m_iE_i$, then $D^2=d^2-\sum m_i^2$ and $K_Y\cdot D=-3d+\sum m_i$.
+\end{notation}
+
+\begin{proposition}[Basic rational-surface facts]\label{prop:basic}
+With notation as above:
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item $Y$ is a smooth rational surface.
+\item If $R\subset \NS(Y)$ is the lattice generated by the exceptional curves of $f$, then
+\[
+\rho(Y)=\rho(X)+\rk(R).
+\]
+\item If all singularities of $X$ are Du Val, then $f$ is crepant and $K_Y=f^*K_X$.
+\item For every smooth rational surface $Y$,
+\[
+\rho(Y)=10-K_Y^2.
+\]
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+The rationality of $Y$ is standard for the minimal resolution of a rank-one del Pezzo surface. The Picard-number formula is immediate from the decomposition of $\NS(Y)$ into the pullback of $\NS(X)$ and the exceptional lattice. Crepancy for Du Val singularities is classical surface theory. Finally, for a smooth rational surface,
+\[
+\chi(\mathcal O_Y)=1,
+\qquad
+K_Y^2+\rho(Y)=10,
+\]
+by Noether's formula and the vanishing of $q(Y)$ and $p_g(Y)$.
+\end{proof}
+
+\begin{remark}
+For later use we note that if $X$ is Gorenstein with only Du Val singularities, then the graded anticanonical ring is preserved by the minimal resolution. The precise statement appears in \cref{prop:ring-equality}.
+\end{remark}
+
+\begin{lemma}[Cohomological vanishing for anti-pluricanonical divisors on degree-one weak del Pezzo surfaces]\label{lem:vanishing}
+Let $Y$ be a smooth weak del Pezzo surface of degree one over an algebraically closed field of characteristic different from $2$. Then for every $m\ge 1$,
+\[
+H^1(Y,\mathcal O_Y(-mK_Y))=0.
+\]
+In particular, $h^0(-mK_Y)=\chi(-mK_Y)=\frac{m(m+1)}{2}+1$.
+\end{lemma}
+
+\begin{proof}
+The proof is by induction on $m$ and uses only the short exact sequence of a pencil member, so it is characteristic-free (given $\mathrm{char}\ne 2$).
+
+\medskip
+\noindent
+\textit{Base case $m=1$.}
+By Riemann--Roch, $\chi(-K_Y)=2$. By Serre duality, $H^2(-K_Y)\cong H^0(2K_Y)^{\vee}=0$ since $2K_Y$ is anti-effective (it has degree $-2$). Hence $h^0(-K_Y)-h^1(-K_Y)=2$. Since $|-K_Y|$ is a pencil, $h^0(-K_Y)\ge 2$, and since the base locus is a single point (not a divisor), $h^0(-K_Y)\le 2$. Therefore $h^0(-K_Y)=2$ and $h^1(-K_Y)=0$.
+
+\medskip
+\noindent
+\textit{Inductive step.}
+Fix a smooth member $D\in |-K_Y|$ (which exists because the generic member of a genus-one pencil is smooth in characteristic different from $2$). Consider the exact sequence
+\[
+0\to \mathcal O_Y(-(m-1)K_Y)\to \mathcal O_Y(-mK_Y)\to \mathcal O_D(-mK_Y|_D)\to 0.
+\]
+By adjunction, $D$ is a smooth curve of arithmetic genus $1$. The restriction $-mK_Y|_D$ has degree $(-mK_Y)\cdot(-K_Y)=m>0=2g(D)-2$, so $H^1(D,\mathcal O_D(-mK_Y|_D))=0$ by the Riemann--Roch theorem on curves. The long exact sequence in cohomology gives
+\[
+H^1(Y,-{(m-1)}K_Y)\to H^1(Y,-mK_Y)\to H^1(D,-mK_Y|_D)=0.
+\]
+By the inductive hypothesis, $H^1(Y,-(m-1)K_Y)=0$. Therefore $H^1(Y,-mK_Y)=0$.
+
+The formula $h^0=\chi$ then follows from $H^2(-mK_Y)\cong H^0((m+1)K_Y)^{\vee}=0$.
+\end{proof}
+
+\section{Reduction to five candidate baskets}\label{sec:baskets}
+
+This section is the only place where the proof uses a broad finite computer-assisted search. The underlying computation is exact. It proceeds in four stages:
+\begin{enumerate}[label=\textup{(\arabic*)}]
+\item enumerate all local cyclic quotient types that survive the elementary $N=8$ local constraints,
+\item enumerate all $8$-point multisets built from those local types,
+\item impose orbifold and discriminant constraints,
+\item replace the provisional quadratic-form screen by the corrected odd-lattice bilinear/anticanonical screen.
+\end{enumerate}
+The output is the five-basket list of \cref{prop:final-baskets}.
+
+\begin{proposition}[Final $N=8$ basket reduction]\label{prop:final-baskets}
+Assume $X$ is a rank-one klt del Pezzo surface over $k$ with $N(X)=8$. Then the singularity basket of $X$ is one of the following five baskets:
+\[
+8A_1,
+\qquad
+7A_1+\tfrac17(1,1),
+\qquad
+7A_1+\tfrac17(1,2),
+\qquad
+7A_1+\tfrac1{11}(1,2),
+\]
+and
+\[
+\mathcal B_{\mathrm{mix}}=\left\{\tfrac12(1,1),\ 5\times\tfrac13(1,1),\ 2\times\tfrac13(1,2)\right\}.
+\]
+\end{proposition}
+
+\begin{proof}
+We summarize the exact finite reduction; the full local-type table, scripts, and machine-readable outputs appear in \cref{app:basket,app:repo}. The reduction is exact and finite at every stage.
+
+The local screen leaves $17$ cyclic quotient types, namely
+\[
+\tfrac12(1,1),\ \tfrac13(1,1),\ \tfrac14(1,1),\ \tfrac15(1,1),\ \tfrac16(1,1),\ \tfrac17(1,1),\ \tfrac18(1,1),\ \tfrac19(1,1),\ \tfrac1{10}(1,1),\ \tfrac1{11}(1,1),
+\]
+\[
+\tfrac13(1,2),\ \tfrac15(1,2),\ \tfrac18(1,3),\ \tfrac17(1,2),\ \tfrac1{11}(1,3),\ \tfrac19(1,2),\ \tfrac1{11}(1,2).
+\]
+Exact enumeration of all $8$-point multisets built from these types gives $735{,}471$ baskets. The successive exact reductions are summarized in \cref{tab:basketcounts}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l r}
+\toprule
+stage & number of baskets \\
+\midrule
+all $8$-point multisets from the $17$ local types & $735{,}471$ \\
+positive candidate $K_X^2$ & $732{,}878$ \\
+coarse square-discriminant budget & $4{,}894$ \\
+corrected exact small-discriminant window (resolved) & $45$ \\
+final survivors after odd-lattice bilinear / anticanonical screen & $5$ \\
+\bottomrule
+\end{tabular}
+\caption{Exact basket-reduction counts used in \cref{prop:final-baskets}.}
+\label{tab:basketcounts}
+\end{table}
+
+In the small-discriminant window, the corrected exact search decides $45$ baskets immediately: $24$ pass the preliminary exact discriminant test and $21$ fail. Two additional historically unresolved baskets were then resolved negatively later in the corrected pipeline. After replacing the provisional quadratic-form screen by the corrected odd-lattice bilinear/anticanonical screen, exactly the five baskets listed above remain.
+
+The proof is exact and finite. The scripts, machine-readable outputs, and intermediate counts are recorded in the repository and summarized in \cref{app:basket,app:repo}.
+\end{proof}
+
+\begin{lemma}[How the numerical basket screens are formed]\label{lem:basket-screens}
+Let $\mathcal B=\{P_1,\dots,P_8\}$ be an $8$-point basket drawn from the local types of \cref{tab:localtypes}. For each point $P_i$, let $r_i$ be the rank of the exceptional chain on the minimal resolution and let $\delta_i:=K_X^2-K_Y^2$ be the local discrepancy correction recorded in \cref{tab:localtypes}. Then any rank-one klt del Pezzo surface with basket $\mathcal B$ must satisfy
+\[
+K_X^2 = 9-\sum_{i=1}^8 r_i + \sum_{i=1}^8 \delta_i > 0.
+\]
+Moreover, if $R$ denotes the total exceptional lattice and $m$ is any positive integer for which $mK_X$ is Cartier, then the discriminant compatibility for the rank-one complement in $\NS(Y)$ imposes the square condition
+\[
+|A_R|\,m^2K_X^2\in (\mathbf Z_{>0})^2,
+\]
+and the refined odd-lattice screen requires that the discriminant bilinear form of $R$ admit a cyclic rank-one complement carrying the anticanonical class of the required norm.
+\end{lemma}
+
+\begin{proof}
+Since $\rho(X)=1$ and the total exceptional rank is $r:=\sum r_i$, one has
+\[
+\rho(Y)=1+r.
+\]
+Because $Y$ is smooth and rational, \cref{prop:basic}(iv) gives
+\[
+K_Y^2 = 10-\rho(Y)=9-r.
+\]
+By definition, each local correction $\delta_i$ satisfies $K_X^2-K_Y^2=\delta_i$ across the corresponding singularity, so summing over the basket gives
+\[
+K_X^2 = K_Y^2+\sum_{i=1}^8 \delta_i = 9-\sum r_i+\sum \delta_i.
+\]
+Positivity of $-K_X$ forces $K_X^2>0$, giving the first screen.
+
+For the second statement, write $\bar R\subset \NS(Y)$ for the primitive closure of the exceptional lattice. Since $\NS(Y)$ is an odd unimodular lattice of signature $(1,\rho(Y)-1)$, a rank-one complement generated by a class $h$ of square $h^2=m^2K_X^2$ can exist only if the discriminant group of $\bar R\oplus \mathbf Zh$ admits an isotropic glue to a unimodular overlattice. In particular the product of discriminants must be a square, which yields the displayed necessary condition. The corrected final screen is the exact version of this statement: one works prime-by-prime with the discriminant bilinear form of $\bar R$ and asks whether there is a cyclic rank-one complement carrying the anticanonical class of the required norm. This is the odd-lattice bilinear/anticanonical test implemented in the repository.
+\end{proof}
+
+\begin{remark}[Computer-assisted status]\label{rem:computer-assisted}
+\Cref{prop:final-baskets} is the only proposition in the paper that depends on a broad exact enumeration rather than a short intrinsic geometric argument. All later eliminations are either hand proofs or exact finite checks attached to a single already-normalized configuration.
+\end{remark}
+
+\section{The three exotic baskets}\label{sec:exotic}
+We first eliminate the three baskets
+\[
+7A_1+\tfrac17(1,1),\qquad 7A_1+\tfrac17(1,2),\qquad 7A_1+\tfrac1{11}(1,2).
+\]
+
+\subsection{Normalization of the noncanonical block}
+
+\begin{proposition}[Standard-form normalization]\label{prop:exotic-normalization}
+Let $Y\to X$ be the minimal resolution of one of the three exotic baskets above. Then, up to Weyl/Cremona action, the noncanonical exceptional block admits a unique standard representative:
+\begin{align*}
+\tfrac17(1,1) &:\quad C\sim H-E_1-\cdots-E_8,\\
+\tfrac17(1,2) &:\quad C_2=E_5-E_6,\qquad C_1\sim H-E_1-\cdots-E_5,\\
+\tfrac1{11}(1,2) &:\quad C_2=E_7-E_8,\qquad C_1\sim H-E_1-\cdots-E_7.
+\end{align*}
+Here the chains are ordered so that the $(-2)$-component is denoted by $C_2$ whenever the exotic point resolves to a two-curve chain.
+\end{proposition}
+
+\begin{proof}
+We solve the standard-form equations in each case.
+
+\medskip
+\noindent
+\textbf{Case $7A_1+\frac17(1,1)$.}
+The noncanonical exceptional curve $C$ satisfies
+\[
+C^2=-7,\qquad K_Y\cdot C=5.
+\]
+The total exceptional rank is $7\cdot 1+1=8$ (seven $A_1$-curves of rank $1$ each, plus the single noncanonical curve), so $\rho(Y)=1+8=9$ and $K_Y^2=10-9=1$. Write
+\[
+C=dH-\sum_{i=1}^8m_iE_i
+\]
+in standard form with $d\ge m_1\ge \cdots\ge m_8\ge 0$. Then
+\[
+\sum m_i=3d+5,\qquad \sum m_i^2=d^2+7.
+\]
+By Cauchy,
+\[
+(3d+5)^2\le 8(d^2+7),
+\]
+which forces $d\le 1$. Since $d=0$ is impossible for an effective standard-form class of self-intersection $-7$, we get $d=1$. Then
+\[
+\sum m_i=8,\qquad \sum m_i^2=8,
+\]
+so necessarily $m_1=\cdots=m_8=1$.
+
+\medskip
+\noindent
+\textbf{Case $7A_1+\frac17(1,2)$.}
+The exceptional chain is $[4,2]$, which has rank $2$. The total exceptional rank is $7\cdot 1+2=9$, giving $\rho(Y)=10$ and $K_Y^2=0$, so $Y=\Bl_9\Pbb^2$. The $(-2)$-curve $C_2$ is a real root in the affine $E_8$ lattice $K_Y^{\perp}/\Zbb K_Y$, so the Weyl group is transitive on its root orbit. We may therefore normalize
+\[
+C_2=E_5-E_6.
+\]
+Write
+\[
+C_1=dH-\sum_{i=1}^9m_iE_i
+\]
+in standard form. Then
+\[
+\sum m_i=3d+2,\qquad \sum m_i^2=d^2+4,\qquad m_5-m_6=1.
+\]
+The exact standard-form solve for the first two equations has only two solutions:
+\[
+(1;1,1,1,1,1,0,0,0,0),\qquad (2;1,1,1,1,1,1,1,1,0).
+\]
+The second violates $m_5-m_6=1$, so the first is the unique admissible solution. Hence
+\[
+C_1\sim H-E_1-\cdots-E_5.
+\]
+
+\medskip
+\noindent
+\textbf{Case $7A_1+\frac1{11}(1,2)$.}
+The exceptional chain is $[6,2]$, which has rank $2$. The total exceptional rank is $7\cdot 1+2=9$, giving $\rho(Y)=10$ and $K_Y^2=0$, so again $Y=\Bl_9\Pbb^2$. We normalize the root component to
+\[
+C_2=E_7-E_8.
+\]
+For the other component,
+\[
+\sum m_i=3d+4,\qquad \sum m_i^2=d^2+6,\qquad m_7-m_8=1.
+\]
+The exact reduced solve gives the unique solution
+\[
+(1;1,1,1,1,1,1,1,0,0),
+\]
+hence
+\[
+C_1\sim H-E_1-\cdots-E_7.
+\]
+This proves the proposition.
+\end{proof}
+
+\subsection{The orthogonal root subsystems}
+
+\begin{lemma}[Orthogonal real-root sets for the exotic baskets]\label{lem:exotic-root-types}
+In the three normal forms of \cref{prop:exotic-normalization}, the orthogonal real-root sets have cardinalities
+\[
+56,\qquad 48,\qquad 32.
+\]
+More precisely:
+\begin{enumerate}[label=\textup{(\roman*)},leftmargin=2.5em]
+    \item for $\frac17(1,1)$ the orthogonal root subsystem is of type $A_7$;
+    \item for $\frac17(1,2)$ the orthogonal real-root set has $48$ elements and contains at most $4$ pairwise orthogonal roots;
+    \item for $\frac1{11}(1,2)$ the orthogonal real-root set has $32$ elements and contains at most $4$ pairwise orthogonal roots.
+\end{enumerate}
+In particular, the maximal number of pairwise orthogonal roots is at most
+\[
+4,\qquad 4,\qquad 4.
+\]
+\end{lemma}
+
+\begin{proof}
+We record both the structural picture and the exact finite verification.
+
+For $\frac17(1,1)$, the orthogonal roots to
+\[
+C=H-E_1-\cdots-E_8
+\]
+inside $K_Y^{\perp}\cong E_8(-1)$ contain the chain
+\[
+E_1-E_2,\ E_2-E_3,\ \dots,\ E_7-E_8,
+\]
+which gives a root subsystem of type $A_7$. The exact root enumeration in the repository returns exactly $56$ orthogonal real roots, which is the full root count of $A_7$; hence the orthogonal root subsystem is exactly $A_7$. In particular the maximal number of pairwise orthogonal roots is $4$.
+
+For $\frac17(1,2)$, after normalizing
+\[
+C_2=E_5-E_6,\qquad C_1=H-E_1-\cdots-E_5,
+\]
+the orthogonal real-root set in $K_Y^{\perp}$ can be described explicitly as the union of
+\begin{itemize}[leftmargin=2.5em]
+    \item the $12$ permutation roots on $\{E_1,E_2,E_3,E_4\}$,
+    \item the $6$ permutation roots on $\{E_7,E_8,E_9\}$,
+    \item and $15$ roots of the form $H-E_a-E_b-E_c$ together with their negatives,
+\end{itemize}
+for a total of $12+6+30=48$ roots. An exact clique computation on the orthogonality graph shows that the largest pairwise orthogonal subset has size $4$.
+
+For $\frac1{11}(1,2)$, after normalizing
+\[
+C_2=E_7-E_8,\qquad C_1=H-E_1-\cdots-E_7,
+\]
+the orthogonal real-root set consists of the $30$ permutation roots on $\{E_1,\dots,E_6\}$ together with the two roots
+\[
+\pm(H-E_7-E_8-E_9),
+\]
+for a total of $32$ roots. Again an exact clique computation on the orthogonality graph shows that the maximum number of pairwise orthogonal roots is $4$.
+\end{proof}
+
+\begin{theorem}[Exotic baskets are impossible]\label{thm:exotic}
+None of the three baskets
+\[
+7A_1+\tfrac17(1,1),\qquad 7A_1+\tfrac17(1,2),\qquad 7A_1+\tfrac1{11}(1,2)
+\]
+occur on a rank-one klt del Pezzo surface in characteristic $3$.
+\end{theorem}
+
+\begin{proof}
+Each basket would require seven further disjoint $A_1$-curves orthogonal to the noncanonical block. By \cref{lem:exotic-root-types}, the orthogonal real-root subsystem is too small in every case: it supports at most $4$, $4$, and $4$ pairwise orthogonal roots respectively. This contradiction rules out all three baskets.
+\end{proof}
+
+\section{The mixed basket}\label{sec:mixed}
+We now eliminate the mixed basket
+\[
+\mathcal B_{\mathrm{mix}}=\left\{\tfrac12(1,1),\ 5\times\tfrac13(1,1),\ 2\times\tfrac13(1,2)\right\}.
+\]
+The proof is longer, but every step after the initial basket reduction is finite and exact.
+
+\subsection{Polarization reduction}
+
+\begin{proposition}[The mixed-basket polarization]\label{prop:mixed-polarization}
+Assume $X$ has basket $\mathcal B_{\mathrm{mix}}$, and let $f\colon Y\to X$ be the minimal resolution. If $C_1,\dots,C_5$ are the five noncanonical $(-3)$-curves coming from the five $\frac13(1,1)$ points, then
+\[
+L:=3f^*(-K_X)=-3K_Y-\sum_{i=1}^5C_i
+\]
+is an integral nef divisor satisfying
+\[
+L^2=6,\qquad K_Y\cdot L=-2.
+\]
+After Cremona reduction, $L$ lies in one of exactly two standard-form orbits:
+\[
+L_1=4H-E_1-\cdots-E_{10},
+\qquad
+L_2=6H-2E_1-\cdots-2E_7-E_8-E_9.
+\]
+\end{proposition}
+
+\begin{proof}
+For a $\frac13(1,1)$ point, the discrepancy on the exceptional curve is $-\frac13$, while the singularities $A_1$ and $\frac13(1,2)$ are canonical. Thus
+\[
+K_Y=f^*K_X-\frac13\sum_{i=1}^5C_i.
+\]
+Rearranging gives the stated integral divisor $L$. Since $f^*(-K_X)$ is nef and big, so is $L$. Direct intersection computation yields
+\[
+L^2=9K_Y^2+6\sum K_Y\cdot C_i+\sum_{i,j}C_i\cdot C_j=6,
+\qquad
+K_Y\cdot L=-3K_Y^2-\sum K_Y\cdot C_i=-2.
+\]
+Write
+\[
+L=dH-\sum_{i=1}^{10}m_iE_i
+\]
+in standard form. Then
+\[
+\sum m_i=3d-2,
+\qquad
+\sum m_i^2=d^2-6.
+\]
+A finite reduced standard-form solve gives exactly two solutions up to Cremona equivalence, namely $L_1$ and $L_2$.
+\end{proof}
+
+\begin{proposition}[The polarization orbit $L_1$ is impossible]\label{prop:L1-impossible}
+The mixed basket cannot occur in the polarization orbit $L_1$.
+\end{proposition}
+
+\begin{proof}
+Define the root sets
+\[
+\mathcal R_0(L)=\{r\mid r^2=-2,\ K_Y\cdot r=0,\ L\cdot r=0\},
+\qquad
+\mathcal R_{-2}(L)=\{r\mid r^2=-2,\ K_Y\cdot r=0,\ L\cdot r=-2\}.
+\]
+For $L=L_1$, the exact search gives
+\[
+|\mathcal R_0(L_1)|=90,
+\qquad
+|\mathcal R_{-2}(L_1)|=210.
+\]
+A mixed-basket realization would require a $5$-clique in $\mathcal R_{-2}(L_1)$ with pairwise intersections $1$, together with an orthogonal canonical subsystem of type $A_2+A_2+A_1$ in $\mathcal R_0(L_1)$. The graph on $\mathcal R_{-2}(L_1)$ contains exactly $30{,}240$ such transformed noncanonical five-cliques, but the exact compatibility search finds that none is orthogonal to an $A_2+A_2+A_1$ subsystem. Hence $L_1$ is impossible.
+\end{proof}
+
+Thus any mixed-basket realization must occur in the single surviving orbit $L_2$.
+
+\subsection{Global normalization in the $L_2$ orbit}
+
+\begin{theorem}[Global normalization theorem for the surviving $L_2$ orbit]\label{thm:L2-global-normalization}
+Inside the $L_2$ root-theoretic model, canonical subsystems of type $A_2+A_2+A_1$ split into exactly two Weyl orbits, of sizes
+\[
+3360\qquad\text{and}\qquad 10080.
+\]
+Among these two orbits, only the orbit of size $3360$ is compatible with a transformed noncanonical $5$-clique. Consequently, every mixed-basket lattice configuration in the $L_2$ orbit is Weyl-equivalent to a canonical subsystem in the compatible $3360$-orbit. For the grouped geometric analysis below we fix the convenient representative
+\[
+S_{\mathrm{std}}=\langle E_3-E_1,\ E_1-E_2,\ E_6-E_4,\ E_5-E_6,\ E_7-E_8\rangle.
+\]
+\end{theorem}
+
+\begin{proof}
+Set
+\[
+\mathcal R_0=\mathcal R_0(L_2),\qquad \mathcal R_{-2}=\mathcal R_{-2}(L_2).
+\]
+The exact root search gives
+\[
+|\mathcal R_0|=128,
+\qquad
+|\mathcal R_{-2}|=177.
+\]
+Now enumerate all canonical subsystems of type $A_2+A_2+A_1$ inside $\mathcal R_0$. There are exactly
+\[
+13{,}440
+\]
+such rootsets. Under the Weyl group generated by reflections in the roots of $\mathcal R_0$, these split into two orbits of sizes $3360$ and $10080$.
+
+Next enumerate all transformed noncanonical five-cliques inside $\mathcal R_{-2}$, 
+\ie{} all $5$-subsets with pairwise intersection $1$. There are exactly
+\[
+5600
+\]
+such cliques. For each one, enumerate all orthogonal canonical subsystems of type $A_2+A_2+A_1$. The result is uniform: every transformed noncanonical five-clique is compatible only with the orbit of size $3360$, namely the orbit containing $S_{\mathrm{std}}$. None is compatible with the second canonical orbit.
+
+Therefore every full mixed-basket lattice configuration can be moved by a $W(L_2)$-isometry so that its canonical subsystem is exactly $S_{\mathrm{std}}$.
+\end{proof}
+
+\subsection{Grouped reduction}
+
+\begin{proposition}[Grouped reduction in the normalized $L_2$ model]\label{prop:grouped-reduction}
+After the normalization of \cref{thm:L2-global-normalization}, every noncanonical class in the mixed-basket configuration has grouped form
+\[
+D=dH-a(E_1+E_2+E_3)-b(E_4+E_5+E_6)-c(E_7+E_8)-mE_9-nE_{10},
+\]
+with multiplicity equalities
+\[
+m_1=m_2=m_3,\qquad m_4=m_5=m_6,\qquad m_7=m_8.
+\]
+Up to the natural symmetries exchanging the two length-$3$ clusters and the two terminal points, the resulting pairwise-orthogonal transformed noncanonical five-cliques fall into exactly seven orbit types.
+\end{proposition}
+
+\begin{proof}
+Orthogonality to the five roots spanning $S_{\mathrm{std}}$ forces the displayed equalities:
+\[
+(E_3-E_1)\cdot D=0\Rightarrow m_1=m_3,
+\qquad
+(E_1-E_2)\cdot D=0\Rightarrow m_1=m_2,
+\]
+\[
+(E_6-E_4)\cdot D=0\Rightarrow m_4=m_6,
+\qquad
+(E_5-E_6)\cdot D=0\Rightarrow m_5=m_6,
+\]
+\[
+(E_7-E_8)\cdot D=0\Rightarrow m_7=m_8.
+\]
+Thus every candidate noncanonical class is grouped. The exact clique enumeration in the normalized grouped model produces $16$ grouped five-cliques; quotienting by the obvious symmetries leaves precisely $7$ orbit types.
+\end{proof}
+
+\subsection{Tangent contact and the seven orbit types}
+
+\begin{lemma}[Tangent-contact lemma]\label{lem:tangent-contact}
+Let
+\[
+D=dH-a(E_1+E_2+E_3)-b(E_4+E_5+E_6)-c(E_7+E_8)-mE_9-nE_{10}
+\]
+be an effective grouped class in the normalized model. Let $T_A,T_B,T_C$ denote the tangent lines to the three proximate clusters of lengths $3,3,2$ respectively. Then
+\[
+I(T_A,D)\ge 3a,
+\qquad
+I(T_B,D)\ge 3b,
+\qquad
+I(T_C,D)\ge 2c.
+\]
+Consequently, if any one of the inequalities
+\[
+3a>d,
+\qquad
+3b>d,
+\qquad
+2c>d
+\]
+holds, then the corresponding tangent line is forced as a component by B\'ezout, and the strict transform of $D$ on the blowup is reducible.
+\end{lemma}
+
+\begin{proof}
+The argument is local and characteristic-free; it uses only the theory of infinitely near points in the plane (see \eg{} \cite[\S3.3]{CasasAlvero00}). The length-$3$ multiplicity sequence $(a,a,a)$ says that the plane curve representing $D$ meets the tangent line $T_A$ with contact order at least $3a$ after successively blowing up the three infinitely near points in the $A$-cluster: at each stage the strict transform passes through the exceptional point with multiplicity at least $a$, and the total contact order is the sum. The same argument gives contact order at least $3b$ with $T_B$ and $2c$ with $T_C$. If one of these contact orders exceeds the plane degree $d$, then B\'ezout forces the corresponding tangent line to be an actual component of the plane curve. The strict transform is therefore reducible.\qedhere
+\end{proof}
+
+\begin{proposition}[The seven grouped $L_2$ orbit types are all impossible]\label{prop:seven-orbits}
+Each of the seven grouped orbit types from \cref{prop:grouped-reduction} contains a class that violates one of the inequalities in \cref{lem:tangent-contact}. In particular none of the seven orbit types can consist of five irreducible noncanonical exceptional $(-3)$-curves.
+\end{proposition}
+
+\begin{proof}
+For each orbit type we exhibit a necessarily reducible class. Write a grouped class as $(d;a,b,c;m,n)$. The exact orbit representatives are listed in the repository; the following table records one forced-reducible class in each orbit.
+
+\begin{center}
+\begin{tabular}{c|c|c}
+\toprule
+Orbit & representative $(d;a,b,c;m,n)$ & forced inequality \\
+\midrule
+1 & $(5;2,1,2;1,2)$ & $3a=6>5$ \\
+2 & $(2;1,1,0;0,1)$ & $3a=3>2$, $3b=3>2$ \\
+3 & $(2;1,1,0;0,1)$ & $3a=3>2$, $3b=3>2$ \\
+4 & $(7;3,2,2;2,1)$ & $3a=9>7$ \\
+5 & $(5;1,2,2;2,1)$ & $3b=6>5$ \\
+6 & $(4;1,2,1;1,1)$ & $3b=6>4$ \\
+7 & $(4;1,2,1;1,1)$ & $3b=6>4$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+In every case the relevant tangent line is forced as a component by \cref{lem:tangent-contact}. Hence each orbit type contains a reducible class and therefore cannot realize the required five irreducible noncanonical exceptional curves. Note that orbits $2$ and $3$ share the same displayed forced-reducible class, as do orbits $6$ and $7$; the symmetry orbits are different five-cliques, but one may choose the same witness class in each pair.
+\end{proof}
+
+\begin{theorem}[The mixed basket is impossible]\label{thm:mixed-impossible}
+The mixed basket
+\[
+\mathcal B_{\mathrm{mix}}=\left\{\tfrac12(1,1),\ 5\times\tfrac13(1,1),\ 2\times\tfrac13(1,2)\right\}
+\]
+does not occur on a rank-one klt del Pezzo surface in characteristic $3$.
+\end{theorem}
+
+\begin{proof}
+By \cref{prop:mixed-polarization}, any realization of the mixed basket lies in one of the polarization orbits $L_1$ or $L_2$. The orbit $L_1$ is impossible by \cref{prop:L1-impossible}. Thus only $L_2$ remains.
+
+By \cref{thm:L2-global-normalization}, every full $L_2$ configuration is Weyl-equivalent to the standard canonical subsystem $S_{\mathrm{std}}$. By \cref{prop:grouped-reduction}, every transformed noncanonical five-clique is then one of the seven grouped orbit types. By \cref{prop:seven-orbits}, each such orbit type contains a necessarily reducible class, contradicting irreducibility of the five noncanonical exceptional curves. Therefore the mixed basket cannot occur.
+\end{proof}
+
+\section{The pure $8A_1$ case}\label{sec:pure8a1}
+We now eliminate the remaining Gorenstein basket $8A_1$.
+
+\subsection{Degree one and the weak del Pezzo model}
+
+\begin{proposition}[The pure $8A_1$ case has degree one]\label{prop:8a1-degree-one}
+Assume $X$ has basket $8A_1$. Then
+\[
+K_X^2=1.
+\]
+\end{proposition}
+
+\begin{proof}
+Let $f\colon Y\to X$ be the minimal resolution. Since the singularities are all Du Val of type $A_1$, the resolution is crepant, so
+\[
+K_Y=f^*K_X,
+\qquad
+K_Y^2=K_X^2=:d.
+\]
+Also
+\[
+\rho(Y)=\rho(X)+8=9.
+\]
+By \cref{prop:basic}(iv),
+\[
+10-K_Y^2=\rho(Y)=9,
+\]
+so $d=1$.
+\end{proof}
+
+\begin{definition}[Almost general position]
+A set of eight points in $\Pbb^2$ is said to be in \emph{almost general position} if no three are collinear, no six lie on a conic, and no cubic passes through all eight with one of them as a singular point. Equivalently, the blowup has nef anticanonical class.
+\end{definition}
+
+\begin{remark}[Almost general position versus the presence of $(-2)$-curves]
+The phrase ``almost general position'' in \cref{prop:deg1-weak-dp} is the standard weak-del-Pezzo condition: it ensures that $-K_Y$ is nef. It does \emph{not} mean that the eight points are generic in the everyday sense. In particular, the existence of $(-2)$-curves on a weak del Pezzo surface is compatible with almost general position; these curves record degeneracies in the blowup configuration that are still allowed by the nefness of $-K_Y$.
+\end{remark}
+
+\begin{proposition}[Degree-one weak del Pezzo structure]\label{prop:deg1-weak-dp}
+Let $Y$ be a weak del Pezzo surface of degree one over an algebraically closed field of characteristic $3$. Then:
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item $Y\cong \Bl_{p_1,\dots,p_8}\Pbb^2$ for eight points in almost general position;
+\item $|-K_Y|$ is a pencil with exactly one base point $q$;
+\item after blowing up $q$, one obtains a rational elliptic surface
+\[
+\sigma\colon Z:=\Bl_qY\to Y;
+\]
+\item the linear system $|-2K_Y|$ is basepoint-free and induces a separable double cover of the quadric cone.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+Statement (i) is the standard degree-one weak-del-Pezzo classification: a weak del Pezzo surface of degree one is the blowup of $\Pbb^2$ at eight points in almost general position; see Demazure \cite{Demazure80}. Statement (ii) is the classical description of the anti-canonical system in degree one: $|-K_Y|$ is a genus-one pencil with a unique base point. Indeed, by Riemann--Roch $\chi(-K_Y)=2$, and the vanishing $H^1(Y,\mathcal O_Y(-K_Y))=0$ (from \cref{lem:vanishing}) gives $h^0(-K_Y)=2$. Blowing up that base point gives the rational genus-one fibration in (iii). Statement (iv) is the bi-anticanonical model theorem in characteristic different from $2$: the linear system $|-2K_Y|$ is basepoint-free and induces a separable double cover of the quadric cone. For normal Gorenstein degree-one del Pezzo surfaces this is recorded by Hidaka--Watanabe \cite{HW81}; for degree-one del Pezzo surfaces with canonical singularities the same double-cover description appears in Proposition~2.2 and Remark~2.3 of Ascher--Bejleri \cite{AscherBejleri21}. The basepoint-freeness of $|-2K_Y|$ on a weak del Pezzo of degree one also uses $H^1(Y,\mathcal O_Y(-2K_Y))=0$, which follows from \cref{lem:vanishing}. The separability in characteristic $3$ is immediate because the covering degree is $2$.
+\end{proof}
+
+\begin{lemma}[The anti-canonical base point avoids the $(-2)$-curves]\label{lem:basepoint-avoids-minus2}
+Let $Y$ be a degree-one weak del Pezzo surface, and let $q$ be the unique base point of $|-K_Y|$. Then $q$ lies on no $(-2)$-curve of $Y$.
+\end{lemma}
+
+\begin{proof}
+Let $R\subset Y$ be a $(-2)$-curve. Since $-K_Y$ is nef and $R$ is orthogonal to the anti-canonical class, one has
+\[
+(-K_Y)\cdot R=0.
+\]
+Assume for contradiction that $q\in R$. Every divisor $D\in |-K_Y|$ passes through $q$, so the effective divisors $D$ and $R$ meet. Because $D\cdot R=0$, positivity of local intersection numbers forces $R$ to be a component of every $D$. Hence $R$ is a fixed component of $|-K_Y|$.
+
+Write
+\[
+|-K_Y| = R + |M|.
+\]
+Then $M\sim -K_Y-R$, and since $h^0(-K_Y)=2$ (by Riemann--Roch and \cref{lem:vanishing}, as $-K_Y$ is nef), the moving part $|M|$ is nonempty. But
+\[
+M^2 = (-K_Y-R)^2 = K_Y^2 + R^2 - 2(-K_Y\cdot R)=1-2-0=-1,
+\]
+which is impossible for the moving part of a nontrivial pencil. Therefore $q\notin R$.
+\end{proof}
+
+\begin{proposition}[Equality of anticanonical rings under the crepant resolution]\label{prop:ring-equality}
+Let $X$ be a Gorenstein del Pezzo surface with only Du Val singularities, and let $f\colon Y\to X$ be its minimal resolution. Then for every $m\ge 0$,
+\[
+H^0(X,\mathcal O_X(-mK_X))\cong H^0(Y,\mathcal O_Y(-mK_Y)),
+\]
+so
+\[
+R(X,-K_X)\cong R(Y,-K_Y).
+\]
+\end{proposition}
+
+\begin{proof}
+Du Val singularities are rational, so $R^if_*\mathcal O_Y=0$ for $i>0$ and $f_*\mathcal O_Y=\mathcal O_X$. Since $f$ is crepant, $K_Y=f^*K_X$, hence
+\[
+\mathcal O_Y(-mK_Y)\cong f^*\mathcal O_X(-mK_X)
+\]
+for every $m\ge 0$. By the projection formula,
+\[
+f_*\mathcal O_Y(-mK_Y)\cong \mathcal O_X(-mK_X)\otimes f_*\mathcal O_Y\cong \mathcal O_X(-mK_X).
+\]
+Taking global sections proves the claim.
+\end{proof}
+
+\subsection{The separable branch model}
+
+\begin{proposition}[The branch model after blowing up the anticanonical base point]\label{prop:branch-model}
+Assume $X$ has basket $8A_1$, let $f\colon Y\to X$ be the minimal resolution, and let $\sigma\colon Z\to Y$ be the blowup of the unique base point of $|-K_Y|$. Then there is a separable double cover
+\[
+\pi\colon Z\to \mathbb F_2
+\]
+branched along a reduced divisor of the form
+\[
+B=S+C,
+\]
+where $S$ is the negative section of $\mathbb F_2$ and
+\[
+C\in |3M|,\qquad M:=S+2F,
+\qquad C\cdot S=0.
+\]
+Equivalently,
+\[
+B\sim 4S+6F=2(2S+3F).
+\]
+\end{proposition}
+
+\begin{proof}
+By \cref{prop:deg1-weak-dp}, the linear system $|-2K_Y|$ is basepoint-free and induces a separable double cover of the quadric cone
+\[
+Q\cong \mathbf P(1,1,2).
+\]
+Blowing up the unique base point $q\in Y$ resolves the Bertini involution and yields a rational elliptic surface $Z=\Bl_qY$. The standard degree-one weak-del-Pezzo theorem identifies $Z$ with a separable double cover of the minimal resolution of $Q$, namely $\mathbb F_2$; see \cite[Prop.~2.2 and Rem.~2.3]{AscherBejleri21} and \cite{HW81}.
+
+The appearance of the negative section $S$ as a branch component is explained as follows. The exceptional curve $E_q$ of the blowup $\sigma\colon Z\to Y$ becomes a bisection of the genus-one fibration on $Z$. Under the double-cover involution, $E_q$ maps to itself and projects to the negative section $S$ on $\mathbb F_2$. Since $E_q$ is pointwise fixed by the involution (it lies over the unique base point of the anticanonical pencil, which is fixed by the Bertini involution), $S$ is a branch component. The remaining branch on $\mathbb F_2$ is a reduced curve $C$ in the class $3M$, where $M=S+2F$ is the pullback of $\mathcal O_Q(1)$.
+
+The class computation is straightforward. Since $\rho\colon \mathbb F_2\to Q$ contracts $S$ and satisfies
+\[
+\rho^*\mathcal O_Q(1)=M=S+2F,
+\]
+the proper transform of a weighted sextic branch divisor on $Q$ has class $3M$. Hence the total branch divisor on $\mathbb F_2$ is
+\[
+B=S+C,\qquad C\in |3M|.
+\]
+Moreover,
+\[
+S\cdot C = S\cdot 3M = 3(S^2+2S\cdot F)=3(-2+2)=0,
+\]
+so $S$ and $C$ are disjoint. Finally,
+\[
+S+3M = S+3(S+2F)=4S+6F=2(2S+3F),
+\]
+which exhibits the total branch class as an even divisor, as required for a double cover.
+\end{proof}
+
+\begin{lemma}[Local node correspondence for separable double covers]\label{lem:node-correspondence}
+Let $U$ be a smooth surface over a field of characteristic different from $2$, and let
+\[
+\pi\colon V\to U
+\]
+be a separable double cover branched along a reduced divisor $B\subset U$. Let $p\in B$ be a point where $U$ is smooth and $B$ has an ordinary node. Then the unique point of $V$ lying over $p$ is a Du Val singularity of type $A_1$. Conversely, if $B$ is reduced and the point of $V$ over $p$ is of type $A_1$, then $B$ has an ordinary node at $p$.
+\end{lemma}
+
+\begin{proof}
+Choose local coordinates $(x,y)$ on $U$ centered at $p$. Because $\pi$ is separable and $2$ is invertible, the cover is analytically given by an equation
+\[
+z^2=f(x,y)
+\]
+with branch divisor $f=0$. If $B$ has a node at $p$, then after a formal change of coordinates,
+\[
+f(x,y)=xy+\text{(higher order terms)}
+\]
+with nondegenerate quadratic part. Completing the square and absorbing higher-order units, the singularity is analytically equivalent to
+\[
+z^2=xy,
+\]
+which is the standard $A_1$ singularity. The converse follows from the same normal form: an $A_1$ point of the cover is analytically equivalent to $z^2=uv$, and projecting to the base recovers a reduced branch divisor with ordinary quadratic part $uv=0$, hence an ordinary node.
+\end{proof}
+
+\begin{remark}
+The singularities relevant for \cref{thm:pure8a1-impossible} occur away from the negative section $S$. Thus \cref{lem:node-correspondence} applies directly to the nodes of $C$ on the smooth surface $\mathbb F_2$.
+\end{remark}
+
+\subsection{The branch-node bound}
+
+\begin{lemma}[Component partition for divisors in $|3M|$ disjoint from $S$]\label{lem:component-partition}
+Let $C\in |3M|$ be a reduced effective divisor on $\mathbb F_2$ with $C\cdot S=0$. Then every irreducible component of $C$ has class $aM$ for some positive integer $a$, and the multiplicities form a partition of $3$.
+\end{lemma}
+
+\begin{proof}
+Let $D$ be an irreducible component of $C$. Write $D\sim \alpha S+\beta F$ with $\alpha\ge 0$. Since $D$ is effective and irreducible with $D\ne S$, one has $D\cdot S=\beta-2\alpha\ge 0$. But $D$ is a component of $C$ and $C\cdot S=0$, so $D\cdot S\ge 0$. Since every component of $C$ satisfies $D\cdot S\ge 0$ and the total intersection is $C\cdot S=0$, each component satisfies $D\cdot S=0$. Hence $\beta=2\alpha$ and $D\sim \alpha(S+2F)=\alpha M$. The components partition the class $3M$, giving a partition of $3$.
+\end{proof}
+
+\begin{lemma}[Node bound for reduced divisors in $|3M|$ on $\mathbb F_2$]\label{lem:node-bound}
+Let $C\in |3M|$ be a reduced divisor on $\mathbb F_2$, where $M=S+2F$. Then $C$ has at most six ordinary nodes.
+\end{lemma}
+
+\begin{proof}
+By \cref{lem:component-partition}, the irreducible components of $C$ partition the class $3M$ into multiples of $M$, so only the partitions $3$, $2+1$, or $1+1+1$ of the coefficient arise. Since
+\[
+M^2=2,
+\qquad
+p_a(M)=0,
+\qquad
+(2M)^2=8,
+\qquad
+p_a(2M)=1,
+\qquad
+(3M)^2=18,
+\qquad
+p_a(3M)=4,
+\]
+there are only three reduced component partitions to consider.
+
+\medskip
+\noindent
+\textbf{Partition $3M$.}
+If $C$ is irreducible of class $3M$, then its arithmetic genus is $4$, so the number of nodes is at most $4$.
+
+\medskip
+\noindent
+\textbf{Partition $2M+M$.}
+Write $C=C_2+C_1$ with $C_2\in |2M|$ and $C_1\in |M|$. The component $C_2$ has arithmetic genus $1$, hence contributes at most one intrinsic node. The component $C_1$ is smooth rational. Their intersection number is
+\[
+(2M)\cdot M=4.
+\]
+Each intersection point of $C_1$ and $C_2$ is at worst an ordinary node of $C_1\cup C_2$ (a tangency or higher contact would produce a singularity worse than a node, reducing the node count). Therefore the total number of nodes is at most
+\[
+1+4=5.
+\]
+
+\medskip
+\noindent
+\textbf{Partition $M+M+M$.}
+Each $M$-component is smooth rational and any two such components meet in
+\[
+M^2=2
+\]
+points. Hence the total number of nodes is at most
+\[
+3\cdot 2=6.
+\]
+Thus every reduced divisor in $|3M|$ has at most six nodes.
+\end{proof}
+
+\begin{theorem}[The pure $8A_1$ basket is impossible]\label{thm:pure8a1-impossible}
+There is no rank-one Gorenstein del Pezzo surface in characteristic $3$ with basket $8A_1$.
+\end{theorem}
+
+\begin{proof}
+Assume such an $X$ exists. By \cref{prop:8a1-degree-one}, it has degree $1$. Let $f\colon Y\to X$ be its crepant resolution. By \cref{prop:deg1-weak-dp}, $Y$ is a degree-one weak del Pezzo surface. By \cref{prop:ring-equality}, the anticanonical model of $X$ agrees with that of $Y$. Blowing up the unique anti-canonical base point $q$ gives a surface $Z$ with the double-cover model of \cref{prop:branch-model}.
+
+Let $R_1,\dots,R_8\subset Y$ be the eight $(-2)$-curves lying over the eight $A_1$-points of $X$. By \cref{lem:basepoint-avoids-minus2}, the point $q$ lies on none of the $R_i$. Hence the blowup $\sigma\colon Z\to Y$ does not modify those eight curves, and the corresponding eight singular points of the anti-canonical model occur away from the negative section $S$ in the branch presentation of \cref{prop:branch-model}. Since $S$ and $C$ are disjoint, every singular point of the reduced branch divisor $S+C$ away from $S$ is simply a singular point of $C$.
+
+By \cref{lem:node-correspondence}, each of the eight $A_1$-points corresponds to an ordinary node of $C$. Therefore $C$ must have at least eight nodes. But by \cref{lem:node-bound}, a reduced divisor $C\in |3M|$ on $\mathbb F_2$ has at most six ordinary nodes. This contradiction proves that $8A_1$ cannot occur.
+\end{proof}
+
+\section{Proof of the main theorem}
+
+\begin{proof}[Proof of \cref{thm:main}]
+Assume for contradiction that $X$ is a rank-one klt del Pezzo surface in characteristic $3$ with $N(X)=8$. By \cref{prop:final-baskets}, its basket is one of the five candidate baskets listed there. The three exotic baskets are impossible by \cref{thm:exotic}. The mixed basket is impossible by \cref{thm:mixed-impossible}. The pure Gorenstein basket $8A_1$ is impossible by \cref{thm:pure8a1-impossible}. Thus no rank-one klt del Pezzo surface in characteristic $3$ has eight singular points. Therefore $N(X)\le 7$.
+\end{proof}
+
+The public repository accompanying this paper is organized in two layers. The first layer---the scripts and result files cited in \cref{app:repo}---contains the exact computer-assisted inputs used in the final proof. The second layer records older exploratory branches that are not logically required by the theorem but are retained for provenance and for future machine-assisted work. In particular, the repository preserves the earlier ambient/deformation lanes, quasi-elliptic probes, wild additive-action scans, and the matroid-style structural screens that were useful during search even though they do not appear as formal hypotheses in the final argument.
+
+\appendix
+
+\section{The basket-reduction computation}\label{app:basket}
+This appendix records the exact data behind \cref{prop:final-baskets}. The point is not to reproduce every line of the scripts in prose, but to expose enough structure and exact counts that a referee can audit the reduction without reverse-engineering the repository.
+
+\subsection{Local cyclic types retained by the $N=8$ screen}
+The local screen retains the $17$ cyclic quotient types listed in \cref{tab:localtypes}. For each type we record the Hirzebruch--Jung chain, the exceptional rank, the local discrepancy correction $\delta_P:=K_X^2-K_Y^2$ contributed by that singularity, the local Cartier index of $K_X$, and the determinant of the exceptional lattice.
+
+\begin{longtable}{>{$}c<{$}>{$}c<{$}c c c c}
+\caption{Local cyclic quotient types used in the exact basket scan.}\label{tab:localtypes}\\
+\toprule
+r & q & chain & $\ExcRank$ & $\delta_P$ & det \\
+\midrule
+\endfirsthead
+\toprule
+r & q & chain & $\ExcRank$ & $\delta_P$ & det \\
+\midrule
+\endhead
+2 & 1 & [2] & 1 & 0 & 2 \\
+3 & 1 & [3] & 1 & 1/3 & 3 \\
+4 & 1 & [4] & 1 & 1 & 4 \\
+5 & 1 & [5] & 1 & 9/5 & 5 \\
+6 & 1 & [6] & 1 & 8/3 & 6 \\
+7 & 1 & [7] & 1 & 25/7 & 7 \\
+8 & 1 & [8] & 1 & 9/2 & 8 \\
+9 & 1 & [9] & 1 & 49/9 & 9 \\
+10 & 1 & [10] & 1 & 32/5 & 10 \\
+11 & 1 & [11] & 1 & 81/11 & 11 \\
+3 & 2 & [2,2] & 2 & 0 & 3 \\
+5 & 2 & [3,2] & 2 & 2/5 & 5 \\
+8 & 3 & [3,3] & 2 & 1 & 8 \\
+7 & 2 & [4,2] & 2 & 8/7 & 7 \\
+11 & 3 & [4,3] & 2 & 20/11 & 11 \\
+9 & 2 & [5,2] & 2 & 2 & 9 \\
+11 & 2 & [6,2] & 2 & 32/11 & 11 \\
+\bottomrule
+\end{longtable}
+
+\subsection{From local data to a finite basket list}
+The scripts implement the following exact finite procedure.
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item Compute the local invariants in \cref{tab:localtypes}: Hirzebruch--Jung chain, exceptional rank, determinant, local discrepancy correction, and Cartier index.
+\item Form all unordered $8$-point multisets from those local types.
+\item For each multiset $\mathcal B$, compute the candidate degree
+\[
+K_X^2(\mathcal B)=9-\sum r_i+\sum \delta_i
+\]
+as in \cref{lem:basket-screens}, and discard every basket with nonpositive degree.
+\item Impose the coarse square-discriminant condition
+\[
+|A_R|m^2K_X^2\in (\mathbf Z_{>0})^2.
+\]
+\item On the low-determinant window, run the exact cyclic-complement search in the discriminant group.
+\item Replace the provisional quadratic-form filter by the corrected odd-lattice discriminant-bilinear/anticanonical screen.
+\end{enumerate}
+At no stage is there any numerical approximation; all quantities are integral or rational and every search space is finite.
+
+\subsection{Exact counts}
+The exact enumeration and screening pipeline is:
+\begin{enumerate}[label=\textup{(\arabic*)}]
+\item Enumerate all $8$-point multisets built from the $17$ local types in \cref{tab:localtypes}. This gives
+\[
+735{,}471
+\]
+multisets.
+\item Retain those with positive candidate $K_X^2$. This leaves
+\[
+732{,}878
+\]
+multisets.
+\item Impose the coarse square-discriminant budget. This leaves
+\[
+4{,}894
+\]
+multisets.
+\item Resolve the small-discriminant window exactly. The corrected exact search decides $45$ baskets immediately in the initial determinant window; $24$ pass and $21$ fail, while two additional historically unresolved baskets are later resolved negatively in the corrected pipeline.
+\item Replace the provisional quadratic-form screen by the corrected odd-lattice discriminant-bilinear/anticanonical screen. This leaves exactly the five baskets of \cref{prop:final-baskets}.
+\end{enumerate}
+
+Two historical corrections are worth recording because the present appendix deliberately uses only the corrected pipeline. First, an earlier quadratic-form implementation falsely rejected the pure $8A_1$ basket because of a bilinear-pairing normalization error (the old v75 rejection). Second, the v78 provisional odd-lattice screen had to be replaced by the corrected v79 bilinear/anticanonical screen. The present paper uses only the corrected output after those repairs.
+
+\section{Computational ingredients used later in the paper}\label{app:later-computations}
+For convenience we record the exact finite counts used in the later sections.
+
+\subsection*{Exotic baskets}
+For the normalized exotic blocks of \cref{prop:exotic-normalization}, the corrected orthogonal real-root counts are:
+\[
+56 \text{ roots for } \tfrac17(1,1),
+\qquad
+48 \text{ roots for } \tfrac17(1,2),
+\qquad
+32 \text{ roots for } \tfrac1{11}(1,2).
+\]
+The repository contains the explicit orthogonality graphs and exact clique computations used in \cref{lem:exotic-root-types}. In the two chain cases the maximal size of a pairwise orthogonal subset is $4$.
+
+\subsection*{Mixed basket}
+For the mixed basket:
+\begin{itemize}
+\item the polarization solve leaves exactly two orbits $L_1$ and $L_2$;
+\item for $L_1$, there are $90$ roots with $L_1\cdot r=0$, $210$ roots with $L_1\cdot r=-2$, and $30{,}240$ transformed noncanonical five-cliques, none compatible with an $A_2+A_2+A_1$ subsystem;
+\item for $L_2$, there are $128$ roots with $L_2\cdot r=0$, $177$ roots with $L_2\cdot r=-2$, $13{,}440$ canonical $A_2+A_2+A_1$ subsystems split into two Weyl orbits of sizes $3360$ and $10080$, and $5600$ transformed noncanonical five-cliques, all compatible only with the $3360$-orbit.
+\end{itemize}
+After grouped reduction, there are exactly $16$ grouped five-cliques and exactly $7$ symmetry orbits.
+
+\section{Repository map}\label{app:repo}
+The repository is intended to make the computer-assisted parts of the proof auditable and reproducible, for both human referees and machine-assisted verification. It is therefore organized in two layers.
+
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item The \emph{final proof layer} contains the scripts, JSON summaries, and notes that are actually cited in the paper.
+\item The \emph{exploratory layer} preserves earlier branches that were useful for search, correction, and provenance, but are not load-bearing inputs to the theorem unless explicitly cited.
+\end{enumerate}
+
+\subsection*{Final proof layer}
+The final theorem depends on the following artifacts.
+\begin{enumerate}[label=\textup{(\Alph*)}]
+\item The basket reduction of \cref{prop:final-baskets} is recorded in the scripts and outputs corresponding to the v74--v79 chain.
+\item The exotic-basket normalization and root-count computations are recorded in the v94 scripts and output summaries.
+\item The mixed-basket polarization reduction and the global $L_2$ normalization theorem are recorded in the v95, v96, v97, and v98 artifacts.
+\item The pure $8A_1$ branch-node computation is recorded in the v72 and v99 artifacts.
+\end{enumerate}
+
+\subsection*{Exploratory layer}
+The public repository also preserves three older search lanes because they are useful for understanding the evolution of the argument and for future machine-assisted continuation.
+\begin{enumerate}[label=\textup{(E\arabic*)}]
+\item \textbf{Ambient/deformation and Picard-merge lane.} This directory contains earlier projective/high-dimensional search infrastructure, including the matroid and circuit style structural screens, compiled finite-field backends, and the associated handoff notes. These files are not used as theorem inputs in the present paper.
+\item \textbf{Quasi-elliptic/global-probe lane.} This directory records later ambient and quasi-elliptic scans that helped close or deprioritize several branches before the final blowup-lattice proof stabilized.
+\item \textbf{Wild $\alpha_3$/Artin--Schreier lane.} This directory preserves the additive-action and Artin--Schreier no-go ledgers and associated search scripts. They are historically important because they explain why several characteristic-$3$ loopholes were investigated and then abandoned.
+\end{enumerate}
+
+A future reader should therefore use the following rule: if a file lives in the exploratory layer and is not explicitly cited in the body of the paper, then it is preserved for provenance only and not as a theorem dependency.
+
+The GitHub-ready archive accompanying this draft preserves both the paper files and the machine-readable computation summaries. The public repository URL for this archive is
+\[
+\repourl
+\]
+which points to the reproducibility repository corresponding to this draft.
+
+\begin{thebibliography}{99}
+
+\bibitem{AscherBejleri21}
+K.~Ascher and D.~Bejleri,
+\emph{Moduli of double covers and degree one del Pezzo surfaces},
+Algebraic Geometry \textbf{8} (2021), no.~3, 291--330.
+
+\bibitem{CasasAlvero00}
+E.~Casas-Alvero,
+\emph{Singularities of Plane Curves},
+London Math.\ Soc.\ Lecture Note Ser.~\textbf{276}, Cambridge Univ.~Press, 2000.
+
+\bibitem{Demazure80}
+M.~Demazure,
+\emph{Surfaces de Del Pezzo I--V},
+in \emph{S\'eminaire sur les Singularit\'es des Surfaces},
+Lecture Notes in Mathematics \textbf{777}, Springer, 1980.
+
+\bibitem{HW81}
+F.~Hidaka and K.~Watanabe,
+\emph{Normal Gorenstein surfaces with ample anti-canonical divisor},
+Tokyo J. Math. \textbf{4} (1981), no.~2, 319--330.
+
+\bibitem{Lacini24}
+J.~Lacini,
+\emph{On rank one log del Pezzo surfaces in characteristic different from two and three},
+Adv. Math. \textbf{442} (2024), 109568.
+
+\end{thebibliography}
+
+\end{document}
