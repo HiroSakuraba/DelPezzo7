@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+title: "nle7-char3-del-pezzo"
+message: "If you use this repository, please cite the accompanying paper draft."
+authors:
+  - family-names: Schulz
+    given-names: Benjamin John
+version: 1.0.0
+date-released: 2026-03-25
+license: MIT
